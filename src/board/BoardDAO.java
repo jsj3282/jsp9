@@ -31,7 +31,7 @@ public class BoardDAO {
 			while(rs.next()) {
 				BoardDTO dto = new BoardDTO();
 				dto.setId(rs.getInt("id"));
-				dto.setHit(rs.getInt("hint"));
+				dto.setHit(rs.getInt("hit"));
 				dto.setIdgroup(rs.getInt("idgroup"));
 				dto.setIndent(rs.getInt("indent"));
 				dto.setStep(rs.getInt("step"));
@@ -45,5 +45,79 @@ public class BoardDAO {
 			e.printStackTrace();
 		}
 		return list;
+	}
+	public void write_save(String name, String title, String content) {
+		String sql = "insert into test_board(id, name, title, content, hit, idgroup, step, indent)" +
+	"values(test_board_seq.nextval,?,?,?,0,test_board_seq.currval,0,0)";
+		//hit는 0으로 이미 default값 설정되어있음, 없어도됨
+		try {
+			con = DriverManager.getConnection(url, user, pwd);
+			ps = con.prepareStatement(sql);
+			ps.setString(1, name);
+			ps.setString(2, title);
+			ps.setString(3, content);
+			ps.executeUpdate();
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public BoardDTO contentView(String id) {
+		uphit(id);
+		String sql = "select * from test_board where id=?";
+		BoardDTO dto = new BoardDTO();
+		try {
+			con = DriverManager.getConnection(url, user, pwd);
+			ps = con.prepareStatement(sql);
+			ps.setString(1,  id);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				dto.setId(rs.getInt("id"));
+				dto.setHit(rs.getInt("hit"));
+				dto.setIdgroup(rs.getInt("idgroup"));
+				dto.setIndent(rs.getInt("indent"));
+				dto.setStep(rs.getInt("step"));
+				dto.setContent(rs.getString("content"));
+				dto.setName(rs.getString("name"));
+				dto.setTitle(rs.getString("title"));
+				dto.setSavedate(rs.getTimestamp("savedate"));
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return dto;
+	}
+	private void uphit(String id) {
+		String sql = "update test_board set hit=hit+1 where id = "+id;
+		try {
+			con = DriverManager.getConnection(url, user, pwd);
+			ps = con.prepareStatement(sql);
+			ps.executeUpdate();
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public void modify(BoardDTO dto) {
+		String sql="update test_board set name=?, title=?, content=? where id=?";
+		try {
+			con = DriverManager.getConnection(url, user, pwd);
+			ps = con.prepareStatement(sql);
+			ps.setString(1,  dto.getName());
+			ps.setString(2,  dto.getTitle());
+			ps.setString(3,  dto.getContent());
+			ps.setInt(4,  dto.getId());
+			ps.executeUpdate();
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public void delete(String id) {
+		String sql = "delete from test_board where id=" + id;
+		try {
+			con = DriverManager.getConnection(url, user, pwd);
+			ps = con.prepareStatement(sql);
+			ps.executeUpdate();
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }
